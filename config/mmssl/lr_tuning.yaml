@@ -1,0 +1,151 @@
+debug: false
+exp_name: [
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_warmup_1e-04_1e-08",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_warmup_1e-04_1e-05",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_warmup_1e-03_1e-08",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_warmup_1e-03_1e-04",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_warmup_1e-05_1e-08",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_warmup_1e-05_1e-06",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_1e-04_1e-08",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_1e-04_1e-05",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_1e-03_1e-08",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_1e-03_1e-04",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_1e-05_1e-08",
+            "ibot_abmil_softmax_rna1k_minmax_align_symmCL_1e-05_1e-06",
+          ]
+
+
+# ------data------
+patch_feature_dir: ""
+patch_feature_dir: ""                 
+rnaseq_path: ""
+csv_path: ""
+prune_compunds_ssl: false
+prune_compunds_downstream: false 
+prune_genes_1k: true
+# ------------------------
+
+
+# ------misc------
+seed: 12
+save_interval: 10000 # creates checkpoints each x epochs
+log_interval: 2 # after x steps logging/prinitng
+eval_random_init_model: false
+eval_patch_features: false
+# ------------------------
+
+
+# ------SSL Training parameters------
+# Training joint WSI+RNA contrastive alignment
+wsi_encoder: "abmil" # "vit-base", "abmil"
+activation: "softmax"
+pos_encoding: "learnable_1d_f(x,y)" # optional for vit-base
+n_tokens: 4096
+sampling_strategy: "random" # "random", "kmeans_cluster"
+rna_encoder: "mlp" # "mlp", "linear"
+rna_normalization: 'minmax' # null, 'minmax', 'std'
+embedding_dim: 768
+gpu_devices: [0]
+num_workers: 30
+###### Loss ######
+loss: "info-nce"
+inter_modality: true
+intra_modality_wsi: false
+intra_modality_rna: false 
+intra_modality_mode_wsi: false
+mask_percentage: null
+mse_reduction: "mean"
+symmetric_cl: true
+temperature: 0.001
+##################
+optimizer: "adamw"
+batch_size: 128
+learning_rate: [
+                1.0E-04,
+                1.0E-04,
+                1.0E-03,
+                1.0E-03,
+                1.0E-05,
+                1.0E-05,
+                1.0E-04,
+                1.0E-04,
+                1.0E-03,
+                1.0E-03,
+                1.0E-05,
+                1.0E-05,
+]
+end_learning_rate: [
+                1.0E-08,
+                1.0E-05,
+                1.0E-08,
+                1.0E-04,
+                1.0E-08,
+                1.0E-06,
+                1.0E-08,
+                1.0E-05,
+                1.0E-08,
+                1.0E-04,
+                1.0E-08,
+                1.0E-06,
+]      
+
+warmup: [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+
+]
+warmup_epochs: [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+]
+epochs: 50
+val_interval_ep: 10
+# ------------------------
+
+# ------ SSL Feature Extraction parameters------
+# Feature extraction from frozen SSL model for downstream evalutaion
+max_inf_tokens: null # null if all tokens should be used
+save_testset_features: false
+# ------------------------
+
+# ------Downstream Training parameters------
+# Training downstream classifier model on frozen SSL embeddings
+ds_epochs: 100
+ds_learning_rates: [5.0E-02, 1.0E-02, 5.0E-03, 1.0E-03, 5.0E-04, 1.0E-04, 5.0E-05, 1.0E-05] # [5.0E-02, 1.0E-02, 5.0E-03, 1.0E-03, 5.0E-04, 1.0E-04, 5.0E-05, 1.0E-05]
+lesions: ['Cellular infiltration',
+           'Fatty change',
+           'Increased mitosis',
+           'Hypertrophy',
+           'Necrosis',
+           'Proliferation',
+        ]
+do_testset_label_modifications: true
+equal_normal_abnormal: true
+ds_batch_size: 16 
+early_stopping: false
+# ------------------------
+
+
+# ------Downstream inference parameters------
+# Inference on trained downstream classifier
+ds_inf_batch_size: 1024 

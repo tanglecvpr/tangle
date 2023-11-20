@@ -1,0 +1,137 @@
+debug: true
+exp_name: "test"
+# ------data------
+patch_feature_dir: ""
+patch_feature_dir: ""                 
+rnaseq_path: ""
+csv_path: ""
+prune_compunds_ssl: false
+prune_compunds_downstream: false 
+prune_genes_1k: false
+# ------------------------
+
+
+# ------misc------
+seed: 12
+save_interval: 10000 # creates checkpoints each x epochs
+log_interval: 2 # after x steps logging/prinitng
+eval_random_init_model: false
+eval_patch_features: false
+# ------------------------
+
+
+# ------SSL Training parameters------
+# Training joint WSI+RNA contrastive alignment
+wsi_encoder: "abmil" # "vit-base", "abmil"
+activation: "softmax"
+pos_encoding: null # optional for vit-base
+n_tokens: 1024
+sampling_strategy: "random" # "random", "kmeans_cluster"
+rna_encoder: "mlp" # "mlp", "linear"
+rna_normalization: 'minmax' # null, 'minmax', 'std'
+embedding_dim: 768
+gpu_devices: [0,1]
+num_workers: 1
+###### Loss ######
+inter_modality: [
+                true,
+                true,
+                true,
+                false,
+                false,
+                false,
+                false,
+                false
+                ]
+inter_modality_pathOmics: [
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                        ]
+intra_modality_wsi: [
+                false,
+                false,
+                false,
+                true,
+                true,
+                true,
+                true,
+                true
+                ]
+intra_modality_rna: false
+intra_modality_mode_wsi: [
+                false,
+                false,
+                false,
+                "contrast_token_views", 
+                "contrast_token_views",
+                "contrast_avg_emb",
+                "contrast_token_views+contrast_avg_emb",
+                "contrast_token_views+contrast_avg_emb",
+                ] # "contrast_token_views", "contrast_avg_emb", "reconstruct_avg_emb", "reconstruct_masked_emb", "reconstruct_masked_emb+contrast_avg_emb", "contrast_token_views+contrast_avg_emb"
+contrast_token_views_loss_scale: [
+                                  false,
+                                  false,
+                                  false,
+                                  false,
+                                  true,
+                                  false,
+                                  false,
+                                  true,
+                                  ]
+mask_percentage: false
+mse_reduction: "mean"
+symmetric_cl: [
+                false,
+                false,
+                true,
+                false,
+                false,
+                false,
+                false,
+                false
+                ]
+temperature: 0.01
+##################
+optimizer: "adamw"
+batch_size: 128
+learning_rate: 1.0E-04
+end_learning_rate: 1.0E-08
+warmup: true
+warmup_epochs: 1
+epochs: 1
+val_interval_ep: 1000
+# ------------------------
+
+# ------ SSL Feature Extraction parameters------
+# Feature extraction from frozen SSL model for downstream evalutaion
+max_inf_tokens: null # null if all tokens should be used
+save_testset_features: false
+# ------------------------
+
+# ------Downstream Training parameters------
+# Training downstream classifier model on frozen SSL embeddings
+ds_epochs: 100
+ds_learning_rates: [5.0E-02, 1.0E-02, 5.0E-03, 1.0E-03, 5.0E-04, 1.0E-04, 5.0E-05, 1.0E-05] # [5.0E-02, 1.0E-02, 5.0E-03, 1.0E-03, 5.0E-04, 1.0E-04, 5.0E-05, 1.0E-05]
+lesions: [
+                'Cellular infiltration',
+                'Fatty change',
+                'Increased mitosis',
+                'Hypertrophy',
+                'Necrosis',
+                'Proliferation',
+        ]
+do_testset_label_modifications: true
+equal_normal_abnormal: true
+ds_batch_size: 16 
+early_stopping: false
+# ------------------------
+
+# ------Downstream inference parameters------
+# Inference on trained downstream classifier
+ds_inf_batch_size: 1024 
